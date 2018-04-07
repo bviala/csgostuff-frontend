@@ -1,45 +1,40 @@
 <template>
     <div>
         <v-container grid-list-xl>
-            <v-layout>
-                <stuff-item
-                    v-for="stuff in allStuffs"
-                    :key="stuff.id"
-                    :stuff="stuff">
-                </stuff-item>
-            </v-layout>
+            <v-flex xs12 sm6 offset-sm3>
+                <v-layout column wrap>
+                    <h4 class="headline mb-0" v-if="loading">Loading stuffs...</h4>
+                    <stuff-item
+                        v-for="stuff in stuffs"
+                        :key="stuff.id"
+                        :stuff="stuff">
+                    </stuff-item>
+                </v-layout>
+            </v-flex>
         </v-container>
     </div>
 </template>
 
 <script>
+    import { STUFF_LIST_QUERY} from '../constants/graphql.js'
     import StuffItem from './StuffItem'
     export default {
         name: 'StuffList',
         data () {
             return {
-                allStuffs: [
-                    {
-                        id: 1,
-                        name: 'mirage flash',
-                        url: 'https://media.giphy.com/media/1qZ7LI7NTa1ewfe3fu/giphy.gif'
-                    },
-                    {
-                        id: 2,
-                        name: 'overpass boost',
-                        url: 'https://media.giphy.com/media/1qZ7LI7NTa1ewfe3fu/giphy.gif'
-                    },
-                    {
-                        id: 3,
-                        name: 'dust2 smoke',
-                        url: 'https://media.giphy.com/media/1qZ7LI7NTa1ewfe3fu/giphy.gif'
-                    }
-                ]
-            }
+                stuffs: [],
+                loading: 0
+            };
         },
         components: {
             StuffItem
+        },
+        apollo: {
+            stuffs: {
+                query: STUFF_LIST_QUERY
+            }
         }
+
     }
 </script>
 
