@@ -7,9 +7,9 @@
                      {{stuff.name}}
                 </h3>
             </v-card-title>
-            <v-card-action>
+            <v-card-actions>
                 <v-btn dark>See</v-btn>
-            </v-card-action>
+            </v-card-actions>
         </v-card>
     </v-flex>
 </template>
