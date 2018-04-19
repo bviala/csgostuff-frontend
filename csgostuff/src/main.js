@@ -11,6 +11,9 @@ import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import VueApollo from 'vue-apollo'
 
+import GSignInButton from 'vue-google-signin-button'
+Vue.use(GSignInButton)
+
 const httpLink = new HttpLink({
   uri: 'http://localhost:4000/graphql'
 })
