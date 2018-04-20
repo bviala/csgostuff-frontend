@@ -7,6 +7,7 @@ import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 
 import { ApolloClient } from 'apollo-client'
+import { ApolloLink } from 'apollo-link'
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import VueApollo from 'vue-apollo'
@@ -18,8 +19,20 @@ const httpLink = new HttpLink({
   uri: 'http://localhost:4000/graphql'
 })
 
+const authMiddleware = new ApolloLink((operation, forward) => {
+  // add the authorization to the headers
+  const token = localStorage.getItem('ID_TOKEN')
+  operation.setContext({
+    headers: {
+      authorization: token ? `Bearer ${token}` : null
+    }
+  })
+
+  return forward(operation)
+})
+
 const apolloClient = new ApolloClient({
-  link: httpLink,
+  link: authMiddleware.concat(httpLink),
   cache: new InMemoryCache(),
   connectToDevTools: true
 })
