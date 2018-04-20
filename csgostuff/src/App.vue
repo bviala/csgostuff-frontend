@@ -1,8 +1,10 @@
 <template>
   <v-app>
     <v-toolbar dark fixed>
-      <v-toolbar-title class="mx-auto">CSGO Stuff</v-toolbar-title>
-      <button 
+      <v-toolbar-title>CSGO Stuff</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <button
+        id="signoutButton"
         v-if="signedIn"
         v-on:click="logout">
         Sign out
@@ -69,9 +71,13 @@ export default {
     /* This is where you control how the button looks. Be creative! */
     display: inline-block;
     padding: 4px 8px;
-    /* border-radius: 3px; */
     background-color: #3c82f7;
     color: #fff;
-    /* box-shadow: 0 3px 0 #0f69ff; */
+  }
+  #signoutButton {
+    display: inline-block;
+    padding: 4px 8px;
+    background-color: #3c82f7;
+    color: #fff;
   }
 </style>
