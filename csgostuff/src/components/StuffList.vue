@@ -22,50 +22,50 @@
 </template>
 
 <script>
-    import { STUFF_LIST_QUERY} from '../constants/graphql.js'
+    import { STUFF_LIST_QUERY } from '../constants/graphql.js'
     import StuffItem from './StuffItem'
     export default {
-        name: 'StuffList',
-        data () {
-            return {
-                selectedMap: null,
-                selectedType: null,
-                mapOptions: [
-                    {text: "All", value: null},
-                    {text: "Cache", value: "CACHE"},
-                    {text: "Cobblestone", value: "COBBLESTONE"},
-                    {text: "Dust 2", value: "DUST2"},
-                    {text: "Inferno", value: "INFERNO"},
-                    {text: "Mirage", value: "MIRAGE"},
-                    {text: "Nuke", value: "NUKE"},
-                    {text: "Overpass", value: "OVERPASS"},
-                    {text: "Train", value: "TRAIN"},
-                ],
-                typeOptions: [
-                    {text: "All", value: null},
-                    {text: "Boost", value: "BOOST"},
-                    {text: "Flash", value: "FLASH"},
-                    {text: "Incendiary", value: "INCENDIARY"},
-                    {text: "Smoke", value: "SMOKE"}
-                ],
-                stuffs: [],
-                loading: 0
-            };
-        },
-        components: {
-            StuffItem
-        },
-        apollo: {
-            stuffs: {
-                query: STUFF_LIST_QUERY,
-                variables() {
-                    return {
-                        map: this.selectedMap,
-                        stuffType: this.selectedType
-                    }
-                }
-            }
+      name: 'StuffList',
+      data () {
+        return {
+          selectedMap: null,
+          selectedType: null,
+          mapOptions: [
+            {text: 'All', value: null},
+            {text: 'Cache', value: 'CACHE'},
+            {text: 'Cobblestone', value: 'COBBLESTONE'},
+            {text: 'Dust 2', value: 'DUST2'},
+            {text: 'Inferno', value: 'INFERNO'},
+            {text: 'Mirage', value: 'MIRAGE'},
+            {text: 'Nuke', value: 'NUKE'},
+            {text: 'Overpass', value: 'OVERPASS'},
+            {text: 'Train', value: 'TRAIN'}
+          ],
+          typeOptions: [
+            {text: 'All', value: null},
+            {text: 'Boost', value: 'BOOST'},
+            {text: 'Flash', value: 'FLASH'},
+            {text: 'Incendiary', value: 'INCENDIARY'},
+            {text: 'Smoke', value: 'SMOKE'}
+          ],
+          stuffs: [],
+          loading: 0
         }
+      },
+      components: {
+        StuffItem
+      },
+      apollo: {
+        stuffs: {
+          query: STUFF_LIST_QUERY,
+          variables () {
+            return {
+              map: this.selectedMap,
+              stuffType: this.selectedType
+            }
+          }
+        }
+      }
 
     }
 </script>

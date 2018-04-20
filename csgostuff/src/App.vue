@@ -2,7 +2,11 @@
   <v-app>
     <v-toolbar dark fixed>
       <v-toolbar-title class="mx-auto">CSGO Stuff</v-toolbar-title>
-      <button v-if="signedIn">Sign out</button>
+      <button 
+        v-if="signedIn"
+        v-on:click="logout">
+        Sign out
+      </button>
       <g-signin-button
         v-else
         :params="googleSignInParams"
@@ -33,20 +37,28 @@ export default {
       googleSignInParams: {
         client_id: '775629744845-hljgo5fqpsmeeo6e028qs64ae73j6e59.apps.googleusercontent.com'
       },
-      signedIn: false
+      signedIn: localStorage.getItem('ID_TOKEN') != null
     }
   },
   methods: {
     onSignInSuccess (googleUser) {
+      localStorage.setItem('ID_TOKEN', googleUser.getAuthResponse().id_token)
+      this.signedIn = true
+
+      // console.log(localStorage.getItem('ID_TOKEN'))
+
       // `googleUser` is the GoogleUser object that represents the just-signed-in user.
       // See https://developers.google.com/identity/sign-in/web/reference#users
-      this.signedIn = true;
-      const profile = googleUser.getBasicProfile() // etc etc
+
       console.log('LOGGED ! ID_TOKEN: ' + googleUser.getAuthResponse().id_token)
     },
     onSignInError (error) {
       // `error` contains any error occurred.
       console.log('OH NOES', error)
+    },
+    logout () {
+      localStorage.removeItem('ID_TOKEN')
+      this.signedIn = false
     }
   }
 }
