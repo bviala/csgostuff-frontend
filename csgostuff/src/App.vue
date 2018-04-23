@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import { GSI_CLIENT_ID } from './secrets'
 export default {
   data () {
     return {
@@ -37,7 +38,7 @@ export default {
        * @type {Object}
        */
       googleSignInParams: {
-        client_id: '775629744845-hljgo5fqpsmeeo6e028qs64ae73j6e59.apps.googleusercontent.com'
+        client_id: GSI_CLIENT_ID
       },
       signedIn: localStorage.getItem('ID_TOKEN') != null
     }
