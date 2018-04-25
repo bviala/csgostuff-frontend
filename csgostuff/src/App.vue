@@ -17,6 +17,16 @@
         Sign in with Google
       </g-signin-button>
     </v-toolbar>
+    <v-dialog v-model="disconnectedDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">
+          Session expired
+        </v-card-title>
+        <v-card-text>
+          Please sign in again
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <v-content class="mt-5" >
       <router-view/>
     </v-content>
@@ -40,28 +50,73 @@ export default {
       googleSignInParams: {
         client_id: GSI_CLIENT_ID
       },
-      signedIn: localStorage.getItem('ID_TOKEN') != null
+      signedIn: false,
+      tokenExpirationWatcherID: null,
+      disconnectedDialog: false
+    }
+  },
+  created () {
+    if (
+      localStorage.getItem('ID_TOKEN') != null &&
+      localStorage.getItem('ID_TOKEN_EXPIRATION') != null &&
+      Date.now() < localStorage.getItem('ID_TOKEN_EXPIRATION')
+    ) {
+      this.signedIn = true
+      this.startTokenExpirationWatcher()
     }
   },
   methods: {
+    startTokenExpirationWatcher () {
+      console.log('Starting TokenExpirationWatcher')
+      const expirationDate = localStorage.getItem('ID_TOKEN_EXPIRATION')
+      const autoLogout = this.autoLogout
+      const checkTokenValidity = function () {
+        const now = Date.now()
+        if (now > expirationDate - 3590000) { // 10s margin
+          console.log('   ID token expired, calling autologout()')
+          autoLogout()
+        }
+      }
+      this.tokenExpirationWatcherID = setInterval(checkTokenValidity, 1000) // check every second for token validity
+    },
+    stopTokenExpirationWatcher () {
+      console.log('Stopping TokenExpirationWatcher')
+      clearInterval(this.tokenExpirationWatcherID)
+    },
     onSignInSuccess (googleUser) {
-      localStorage.setItem('ID_TOKEN', googleUser.getAuthResponse().id_token)
-      this.signedIn = true
-
-      // console.log(localStorage.getItem('ID_TOKEN'))
-
       // `googleUser` is the GoogleUser object that represents the just-signed-in user.
       // See https://developers.google.com/identity/sign-in/web/reference#users
 
+      localStorage.setItem('ID_TOKEN', googleUser.getAuthResponse().id_token)
       console.log('LOGGED ! ID_TOKEN: ' + googleUser.getAuthResponse().id_token)
+
+      localStorage.setItem('ID_TOKEN_EXPIRATION', googleUser.getAuthResponse().expires_at)
+      console.log('JWT will expire at ' + googleUser.getAuthResponse().expires_at)
+
+      this.signedIn = true
+      this.startTokenExpirationWatcher()
     },
     onSignInError (error) {
       // `error` contains any error occurred.
       console.log('OH NOES', error)
     },
+    autoLogout () {
+      this.disconnectedDialog = true
+      this.logout()
+    },
     logout () {
-      localStorage.removeItem('ID_TOKEN')
-      this.signedIn = false
+      window.gapi.load('auth2', () => {
+        var auth2 = window.gapi.auth2.init(this.googleSignInParams)
+        auth2.then(() => {
+          auth2.disconnect().then(() => {
+            localStorage.removeItem('ID_TOKEN')
+            localStorage.removeItem('ID_TOKEN_EXPIRATION')
+            this.signedIn = false
+            this.stopTokenExpirationWatcher()
+            console.log('User disconnected.')
+          })
+        })
+      })
     }
   }
 }
@@ -74,6 +129,7 @@ export default {
     padding: 4px 8px;
     background-color: #3c82f7;
     color: #fff;
+    cursor: pointer;
   }
   #signoutButton {
     display: inline-block;
