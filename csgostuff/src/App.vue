@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <v-toolbar dark fixed>
-      <v-toolbar-title>CSGO Stuff</v-toolbar-title>
+    <v-toolbar flat dark fixed>
+      <v-toolbar-title class="ml-4">CSGO Stuff</v-toolbar-title>
       <v-spacer></v-spacer>
       <button
         id="signoutButton"
@@ -72,7 +72,7 @@ export default {
       const autoLogout = this.autoLogout
       const checkTokenValidity = function () {
         const now = Date.now()
-        if (now > expirationDate - 3590000) { // 10s margin
+        if (now > expirationDate) { // - 3590000) { // 10s margin
           console.log('   ID token expired, calling autologout()')
           autoLogout()
         }

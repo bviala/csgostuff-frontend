@@ -1,24 +1,24 @@
 <template>
-    <div>
-        <v-container grid-list-xl>
-            <v-flex xs12 sm6 offset-sm3>
-                <v-layout row wrap>
-                    <v-flex d-flex xs12>
-                        <v-select class="pr-2" label="Map" :items="mapOptions" v-model="selectedMap"></v-select>
-                        <v-select class="pl-2" label="Type" :items="typeOptions" v-model="selectedType"></v-select>
-                    </v-flex>
-                </v-layout>
-                <v-layout column wrap>
-                    <h4 class="headline mb-0" v-if="loading">Loading stuffs...</h4>
-                    <stuff-item
-                        v-for="stuff in stuffs"
-                        :key="stuff.id"
-                        :stuff="stuff">
-                    </stuff-item>
-                </v-layout>
-            </v-flex>
-        </v-container>
-    </div>
+        
+  <v-container grid-list-xl fluid class="mt-3">
+    <v-layout row class="pa-3">
+      <v-flex xs3 id="sidePanel">
+        <v-select label="Map" :items="mapOptions" v-model="selectedMap"></v-select>
+        <v-select label="Type" :items="typeOptions" v-model="selectedType"></v-select>
+      </v-flex>
+      <v-flex xs9 offset-xs3>
+        <v-layout column class="ml-3">
+          <h4 class="headline mb-0" v-if="loading">Loading stuffs...</h4>
+          <stuff-item
+            v-for="stuff in stuffs"
+            :key="stuff.id"
+            :stuff="stuff">
+          </stuff-item>
+        </v-layout>
+      </v-flex>
+    </v-layout>
+  </v-container>
+
 </template>
 
 <script>
@@ -69,4 +69,11 @@
 
     }
 </script>
+<style>
+  #sidePanel {
+    position: fixed;
+    width: 100%;
+    /* border: 1px solid red; */
+  }
+</style>
 
