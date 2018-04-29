@@ -3,8 +3,18 @@
   <v-container grid-list-xl fluid class="mt-3">
     <v-layout row class="pa-3">
       <v-flex xs3 id="sidePanel">
-        <v-select label="Map" :items="mapOptions" v-model="selectedMap"></v-select>
-        <v-select label="Type" :items="typeOptions" v-model="selectedType"></v-select>
+        <v-select 
+          label="Map" 
+          :items="mapOptions" 
+          v-model="selectedMap"
+          @change="$vuetify.goTo(0, null)">
+        </v-select>
+        <v-select 
+          label="Type" 
+          :items="typeOptions" 
+          v-model="selectedType"
+          @change="$vuetify.goTo(0, null)">
+        </v-select> 
       </v-flex>
       <v-flex xs9 offset-xs3>
         <v-layout column class="ml-3">
