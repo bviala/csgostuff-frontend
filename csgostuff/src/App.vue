@@ -70,10 +70,10 @@ export default {
       console.log('Starting TokenExpirationWatcher')
       const expirationDate = localStorage.getItem('ID_TOKEN_EXPIRATION')
       const autoLogout = this.autoLogout
-      const checkTokenValidity = function () {
+      const checkTokenValidity = () => {
         const now = Date.now()
         if (now > expirationDate) { // - 3590000) { // 10s margin
-          console.log('   ID token expired, calling autologout()')
+          console.log('ID token expired, calling autologout()')
           autoLogout()
         }
       }
@@ -101,12 +101,12 @@ export default {
       console.log('OH NOES', error)
     },
     autoLogout () {
-      this.disconnectedDialog = true
       this.logout()
+      this.disconnectedDialog = true
     },
     logout () {
       window.gapi.load('auth2', () => {
-        var auth2 = window.gapi.auth2.init(this.googleSignInParams)
+        const auth2 = window.gapi.auth2.init(this.googleSignInParams)
         auth2.then(() => {
           auth2.disconnect().then(() => {
             localStorage.removeItem('ID_TOKEN')

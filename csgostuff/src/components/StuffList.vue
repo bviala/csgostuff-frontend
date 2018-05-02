@@ -1,6 +1,6 @@
 <template>
         
-  <v-container grid-list-xl fluid class="mt-3">
+  <v-container grid-list-xl fluid>
     <v-layout row class="pa-3">
       <v-flex xs3 id="sidePanel">
         <v-select 
