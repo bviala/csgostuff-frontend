@@ -9,6 +9,18 @@ export const STUFF_LIST_QUERY = gql`
             stuffType
             gifURL
             score
+            myVote
         }
+    }
+`
+export const VOTE_MUTATION = gql`
+    mutation voteMutation($stuffID: ID!, $voteType: VoteType!){ 
+        vote(stuffID: $stuffID, voteType: $voteType) 
+    }
+`
+
+export const REMOVE_VOTE_MUTATION = gql`
+    mutation removeVoteMutation($stuffID: ID!){ 
+        removeVote(stuffID: $stuffID) 
     }
 `
