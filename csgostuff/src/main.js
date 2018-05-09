@@ -12,6 +12,8 @@ import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import VueApollo from 'vue-apollo'
 
+import store from './store/store'
+
 import GSignInButton from 'vue-google-signin-button'
 Vue.use(GSignInButton)
 
@@ -55,6 +57,7 @@ new Vue({
   el: '#app',
   provide: apolloProvider.provide(),
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

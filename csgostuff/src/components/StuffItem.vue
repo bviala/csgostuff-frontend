@@ -8,7 +8,7 @@
                 <v-layout column align-center="true">
                   <v-btn 
                     icon flat
-                    v-bind:disabled="false"
+                    v-bind:disabled="!isUserSignedIn"
                     v-bind:color="upvoteButtonColor"
                     @click="upvote">
                     <v-icon>keyboard_arrow_up</v-icon>
@@ -16,7 +16,7 @@
                   {{localScore}}
                   <v-btn
                     icon flat
-                    v-bind:disabled="false"
+                    v-bind:disabled="!isUserSignedIn"
                     v-bind:color="downvoteButtonColor"
                     @click="downvote">
                     <v-icon>keyboard_arrow_down</v-icon>
@@ -56,6 +56,9 @@
       }
     },
     computed: {
+      isUserSignedIn () {
+        return this.$store.state.isUserSignedIn
+      },
       upvoteButtonColor () {
         return this.upvoted ? 'green' : ''
       },

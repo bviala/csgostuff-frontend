@@ -1,7 +1,5 @@
 <template>
-        
   <v-container grid-list-xl fluid>
-    {{ isUserConnected }}
     <v-layout row class="pa-3">
       <v-flex xs3 id="sidePanel">
         <v-select 
@@ -29,7 +27,6 @@
       </v-flex>
     </v-layout>
   </v-container>
-
 </template>
 
 <script>

@@ -5,7 +5,7 @@
       <v-spacer></v-spacer>
       <button
         id="signoutButton"
-        v-if="signedIn"
+        v-if="isUserSignedIn"
         v-on:click="logout">
         Sign out
       </button>
@@ -50,7 +50,6 @@ export default {
       googleSignInParams: {
         client_id: GSI_CLIENT_ID
       },
-      signedIn: false,
       tokenExpirationWatcherID: null,
       disconnectedDialog: false
     }
@@ -61,8 +60,13 @@ export default {
       localStorage.getItem('ID_TOKEN_EXPIRATION') != null &&
       Date.now() < localStorage.getItem('ID_TOKEN_EXPIRATION')
     ) {
-      this.signedIn = true
+      this.$store.commit('signIn')
       this.startTokenExpirationWatcher()
+    }
+  },
+  computed: {
+    isUserSignedIn () {
+      return this.$store.state.isUserSignedIn
     }
   },
   methods: {
@@ -93,7 +97,7 @@ export default {
       localStorage.setItem('ID_TOKEN_EXPIRATION', googleUser.getAuthResponse().expires_at)
       console.log('JWT will expire at ' + googleUser.getAuthResponse().expires_at)
 
-      this.signedIn = true
+      this.$store.commit('signIn')
       this.startTokenExpirationWatcher()
     },
     onSignInError (error) {
@@ -111,7 +115,8 @@ export default {
           auth2.disconnect().then(() => {
             localStorage.removeItem('ID_TOKEN')
             localStorage.removeItem('ID_TOKEN_EXPIRATION')
-            this.signedIn = false
+
+            this.$store.commit('signOut')
             this.stopTokenExpirationWatcher()
             console.log('User disconnected.')
           })
