@@ -60,6 +60,17 @@
           loading: 0
         }
       },
+      computed: {
+        isUserSignedIn () {
+          return this.$store.state.isUserSignedIn
+        }
+      },
+      watch: {
+        // when user sign in, refetch to get current vote for each stuff
+        isUserSignedIn: function (value) {
+          this.$apollo.queries.stuffs.refetch()
+        }
+      },
       components: {
         StuffItem
       },
@@ -81,7 +92,6 @@
   #sidePanel {
     position: fixed;
     width: 100%;
-    /* border: 1px solid red; */
   }
 </style>
 

@@ -18,7 +18,6 @@ export const VOTE_MUTATION = gql`
         vote(stuffID: $stuffID, voteType: $voteType) 
     }
 `
-
 export const REMOVE_VOTE_MUTATION = gql`
     mutation removeVoteMutation($stuffID: ID!){ 
         removeVote(stuffID: $stuffID) 

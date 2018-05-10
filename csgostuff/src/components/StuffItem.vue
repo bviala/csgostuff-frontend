@@ -50,9 +50,8 @@
     props: ['stuff'],
     data () {
       return {
-        upvoted: this.stuff.myVote === 'UPVOTE',
-        downvoted: this.stuff.myVote === 'DOWNVOTE',
-        offsetScore: this.stuff.myVote === 'UPVOTE' ? 1 : this.stuff.myVote === 'DOWNVOTE' ? -1 : 0 // keeps in memory the user vote at load time
+        localMyVote: this.stuff.myVote,
+        localScore: this.stuff.score
       }
     },
     computed: {
@@ -60,41 +59,48 @@
         return this.$store.state.isUserSignedIn
       },
       upvoteButtonColor () {
-        return this.upvoted ? 'green' : ''
+        return this.localMyVote === 'UPVOTE' ? 'green' : ''
       },
       downvoteButtonColor () {
-        return this.downvoted ? 'red' : ''
-      },
-      localScore () {
-        if (this.upvoted) {
-          return this.stuff.score + 1 - this.offsetScore
-        } else if (this.downvoted) {
-          return this.stuff.score - 1 - this.offsetScore
-        } else {
-          return this.stuff.score - this.offsetScore
-        }
+        return this.localMyVote === 'DOWNVOTE' ? 'red' : ''
+      }
+    },
+    watch: {
+      // update localMyVote on user sign in
+      stuff: function (value) {
+        this.localMyVote = value.myVote
       }
     },
     methods: {
       upvote () {
-        if (this.upvoted) {
+        if (this.localMyVote === 'UPVOTE') {
           this.apolloRemoveVote()
+          this.localMyVote = null
+          this.localScore--
+        } else if (this.localMyVote === 'DOWNVOTE') {
+          this.apolloVote('UPVOTE')
+          this.localMyVote = 'UPVOTE'
+          this.localScore += 2
         } else {
           this.apolloVote('UPVOTE')
+          this.localMyVote = 'UPVOTE'
+          this.localScore++
         }
-
-        this.upvoted = !this.upvoted
-        this.downvoted = false
       },
       downvote () {
-        if (this.downvoted) {
+        if (this.localMyVote === 'DOWNVOTE') {
           this.apolloRemoveVote()
+          this.localMyVote = null
+          this.localScore++
+        } else if (this.localMyVote === 'UPVOTE') {
+          this.apolloVote('DOWNVOTE')
+          this.localMyVote = 'DOWNVOTE'
+          this.localScore -= 2
         } else {
           this.apolloVote('DOWNVOTE')
+          this.localMyVote = 'DOWNVOTE'
+          this.localScore--
         }
-
-        this.downvoted = !this.downvoted
-        this.upvoted = false
       },
       apolloVote (voteType) {
         this.$apollo.mutate({
