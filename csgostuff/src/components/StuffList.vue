@@ -17,8 +17,11 @@
       </v-flex>
       <v-flex xs9 offset-xs3>
         <v-layout column class="ml-3">
-          <h4 class="headline mb-0" v-if="loading">Loading stuffs...</h4>
+          <div v-if="loading" id="vpc">
+            <v-progress-circular :size="75" indeterminate color="primary"></v-progress-circular>
+          </div>
           <stuff-item
+            v-else
             v-for="stuff in stuffs"
             :key="stuff.id"
             :stuff="stuff">
@@ -92,6 +95,10 @@
   #sidePanel {
     position: fixed;
     width: 100%;
+  }
+  #vpc {
+    text-align: center;
+    padding-top: 50px;
   }
 </style>
 
