@@ -22,9 +22,9 @@
           </div>
           <stuff-item
             v-else
-            v-for="stuff in stuffs"
-            :key="stuff.id"
-            :stuff="stuff">
+            v-for="edge in stuffsConnection.edges"
+            :key="edge.node.id"
+            :stuff="edge.node">
           </stuff-item>
         </v-layout>
       </v-flex>
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-    import { STUFF_LIST_QUERY } from '../constants/graphql.js'
+    import { STUFFS_CONNECTION } from '../constants/graphql.js'
     import StuffItem from './StuffItem'
     export default {
       name: 'StuffList',
@@ -59,7 +59,7 @@
             {text: 'Incendiary', value: 'INCENDIARY'},
             {text: 'Smoke', value: 'SMOKE'}
           ],
-          stuffs: [],
+          stuffsConnection: null,
           loading: 0
         }
       },
@@ -71,19 +71,21 @@
       watch: {
         // when user sign in, refetch to get current vote for each stuff
         isUserSignedIn: function (value) {
-          this.$apollo.queries.stuffs.refetch()
+          this.$apollo.queries.stuffsConnection.refetch()
         }
       },
       components: {
         StuffItem
       },
       apollo: {
-        stuffs: {
-          query: STUFF_LIST_QUERY,
+        stuffsConnection: {
+          query: STUFFS_CONNECTION,
           variables () {
             return {
               map: this.selectedMap,
-              stuffType: this.selectedType
+              stuffType: this.selectedType,
+              first: null,
+              after: null
             }
           }
         }
