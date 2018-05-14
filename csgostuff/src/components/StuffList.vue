@@ -3,18 +3,16 @@
     <v-layout row class="pa-3">
       <v-flex xs3 id="sidePanel">
         <v-select
-          :disabled="true" 
           label="Map" 
           :items="mapOptions" 
           v-model="selectedMap"
-          @change="filterChange">
+          @change="resetStuffList">
         </v-select>
         <v-select
-          :disabled="true"
           label="Type" 
           :items="typeOptions" 
           v-model="selectedType"
-          @change="filterChange">
+          @change="resetStuffList">
         </v-select> 
       </v-flex>
       <v-flex xs9 offset-xs3>
@@ -92,8 +90,7 @@
       watch: {
         // when user sign in, refetch to get current vote for each stuff
         isUserSignedIn: async function (value) {
-          await this.$apollo.queries.stuffsConnection.refetch()
-          this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+          if (value === true) this.resetStuffList()
         },
         stuffsConnection: function (value) {
           console.log('stuffsConnection update: ' + value)
@@ -121,36 +118,12 @@
         }
       },
       methods: {
-        filterChange () {
-          // this.stuffsConnection = null
-          // this.$vuetify.goTo(0, null)
-          // this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
+        async resetStuffList () {
+          console.log('resetStuffList')
+          await this.$vuetify.goTo(0, {duration: 0})
+          await this.$apollo.queries.stuffsConnection.refetch()
+          this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         },
-        /* showMore () {
-          this.$apollo.queries.stuffsConnection.fetchMore({
-            variables: {
-              map: this.selectedMap,
-              stuffType: this.selectedType,
-              first: pageSize,
-              after: this.stuffListPaginationCursor
-            },
-            updateQuery: (previousResult, { fetchMoreResult }) => {
-              const newEdges = fetchMoreResult.stuffsConnection.edges
-              const pageInfo = fetchMoreResult.stuffsConnection.pageInfo
-
-              this.stuffListPaginationCursor = pageInfo.endCursor
-              thNext = pageInfo.hasNextPage
-
-              return {
-                stuffsConnection: {
-                  __typename: previousResult.stuffsConnection.__typename,
-                  edges: [...previousResult.stuffsConnection.edges, ...newEdges],
-                  pageInfo: pageInfo
-                }
-              }
-            }
-          })
-        }, */
         async infiniteHandler ($state) {
           console.log('infiniteHandler triggered')
           if (this.hasNextPage) {
