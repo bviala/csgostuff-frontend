@@ -20,7 +20,7 @@
           <div v-if="loading" id="vpc">
             <v-progress-circular :size="75" indeterminate color="primary"></v-progress-circular>
           </div>         
-          <v-list v-if="stuffsConnection">
+          <v-list id="stuffList" v-if="stuffsConnection">
             <template v-for="edge in stuffsConnection.edges">
               <stuff-item
                 :key="edge.node.id"
@@ -169,6 +169,10 @@
   #vpc {
     text-align: center;
     padding-top: 50px;
+  }
+  #stuffList{
+    padding-left: 35px;
+    background-color: transparent;
   }
 </style>
 

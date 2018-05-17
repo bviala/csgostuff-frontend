@@ -1,7 +1,8 @@
 <template>
     <v-flex>
         <v-card flat >
-            <v-card-media :src="stuff.gifURL" height="450px"></v-card-media>
+            <!-- <v-card-media :src="stuff.gifURL" height="450px"></v-card-media> -->
+            <video :src="stuff.gifURL" width="100%" autoplay muted loop playsinline></video>
             <v-layout row>
               
               <v-flex xs1 class="ml-2">
