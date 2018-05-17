@@ -89,7 +89,7 @@
       },
       watch: {
         // when user sign in, refetch to get current vote for each stuff
-        isUserSignedIn: async function (value) {
+        isUserSignedIn: function (value) {
           if (value === true) this.resetStuffList()
         },
         stuffsConnection: function (value) {
@@ -169,9 +169,6 @@
   #vpc {
     text-align: center;
     padding-top: 50px;
-  }
-  .lol {
-    height: 400px;
   }
 </style>
 
