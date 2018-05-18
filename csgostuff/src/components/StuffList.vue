@@ -17,9 +17,10 @@
       </v-flex>
       <v-flex xs9 offset-xs3>
         <v-layout column class="ml-3">
-          <div v-if="loading" id="vpc">
+          <!-- <div v-if="loading" id="vpc">
             <v-progress-circular :size="75" indeterminate color="primary"></v-progress-circular>
-          </div>         
+          </div>   -->   
+              
           <v-list id="stuffList" v-if="stuffsConnection">
             <template v-for="edge in stuffsConnection.edges">
               <stuff-item
@@ -171,7 +172,7 @@
     padding-top: 50px;
   }
   #stuffList{
-    padding-left: 35px;
+    
     background-color: transparent;
   }
 </style>

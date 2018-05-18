@@ -1,10 +1,16 @@
 <template>
     <v-flex>
-        <v-card flat >
-            <!-- <v-card-media :src="stuff.gifURL" height="450px"></v-card-media> -->
-            <video :src="stuff.gifURL" width="100%" autoplay muted loop playsinline></video>
+        <v-card flat>
+            <v-card-media height="500px">
+              <video 
+                class="video-full-width" 
+                :src="stuff.gifURL" 
+                autoplay 
+                muted 
+                loop>
+              </video>
+            </v-card-media>
             <v-layout row>
-              
               <v-flex xs1 class="ml-2">
                 <v-layout column align-center="true">
                   <v-btn 
@@ -24,7 +30,6 @@
                   </v-btn>
                 </v-layout>
               </v-flex>
-
               <v-flex>
                 <v-layout column>
                   <v-card-title class="headline pb-1">
@@ -123,3 +128,10 @@
     }
   }
 </script>
+<style>
+.video-full-width {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>

@@ -1,7 +1,8 @@
 <template>
   <v-app>
     <v-toolbar flat dark fixed>
-      <v-toolbar-title class="ml-4">CSGO Stuff</v-toolbar-title>
+      <v-toolbar-title id="toolbar-title" class="mx-4">CSGO Stuff</v-toolbar-title>
+        // WORK IN PROGRESS
       <v-spacer></v-spacer>
       <button
         id="signoutButton"
@@ -30,9 +31,6 @@
     <v-content class="mt-5" >
       <router-view/>
     </v-content>
-    <v-footer fixed class="pa-2">
-      <div class="mx-auto">WORK IN PROGRESS</div>
-    </v-footer>
   </v-app>
 </template>
 
@@ -142,4 +140,7 @@ export default {
     background-color: #3c82f7;
     color: #fff;
   }
+  #toolbar-title{
+    font-weight: normal;
+  } 
 </style>
