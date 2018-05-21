@@ -6,20 +6,17 @@
           label="Map" 
           :items="mapOptions" 
           v-model="selectedMap"
-          @change="resetStuffList">
+          @change="filterChanged">
         </v-select>
         <v-select
           label="Type" 
           :items="typeOptions" 
           v-model="selectedType"
-          @change="resetStuffList">
+          @change="filterChanged">
         </v-select> 
       </v-flex>
       <v-flex xs9 offset-xs3>
-        <v-layout column class="ml-3">
-          <!-- <div v-if="loading" id="vpc">
-            <v-progress-circular :size="75" indeterminate color="primary"></v-progress-circular>
-          </div>   -->   
+        <v-layout column class="ml-3"> 
               
           <v-list id="stuffList" v-if="stuffsConnection">
             <template v-for="edge in stuffsConnection.edges">
@@ -30,9 +27,9 @@
             </template>
           </v-list>
 
-          <!-- v-if prevent infiniteHandler to be called  -->
-          <infinite-loading 
-            v-if="stuffsConnection"
+          <!-- v-if prevent infiniteHandler to be called at page creation -->
+          <infinite-loading
+            v-if="hasInitialQueryBeenDone"
             @infinite="infiniteHandler" 
             :distance="0"
             ref="infiniteLoading">
@@ -78,9 +75,7 @@
             {text: 'Smoke', value: 'SMOKE'}
           ],
           stuffsConnection: null,
-          loading: 0,
-          stuffListPaginationCursor: null,
-          hasNextPage: true // pageSize - 1
+          hasInitialQueryBeenDone: false
         }
       },
       computed: {
@@ -91,14 +86,10 @@
       watch: {
         // when user sign in, refetch to get current vote for each stuff
         isUserSignedIn: function (value) {
-          if (value === true) this.resetStuffList()
+          if (value === true) this.filterChanged()
         },
         stuffsConnection: function (value) {
-          console.log('stuffsConnection update: ' + value)
-          this.stuffListPaginationCursor = value.pageInfo.endCursor
-
-          console.log('hasNextPage: ' + value.pageInfo.hasNextPage)
-          this.hasNextPage = value.pageInfo.hasNextPage
+          this.hasInitialQueryBeenDone = true
         }
       },
       components: {
@@ -106,57 +97,53 @@
         InfiniteLoading
       },
       apollo: {
-        stuffsConnection: {
+        stuffsConnection: { // initialQuery: this query WILL execute, but just ONCE at app creation. Subsequent queries are managed by infiniteHandler
           query: STUFFS_CONNECTION,
-          variables () {
-            return {
-              map: this.selectedMap,
-              stuffType: this.selectedType,
-              first: pageSize,
-              after: null
-            }
+          variables: {
+            first: pageSize
           }
         }
       },
       methods: {
-        async resetStuffList () {
-          console.log('resetStuffList')
+        async filterChanged () {
+          console.log('filterChanged')
           await this.$vuetify.goTo(0, {duration: 0})
-          await this.$apollo.queries.stuffsConnection.refetch()
+          this.stuffsConnection = null
           this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         },
-        async infiniteHandler ($state) {
+
+        async infiniteHandler ($state) { // manage ALL queries, EXCEPT initial one at page creation
           console.log('infiniteHandler triggered')
-          if (this.hasNextPage) {
-            let localHasNextPage
-            await this.$apollo.queries.stuffsConnection.fetchMore({
-              variables: {
-                map: this.selectedMap,
-                stuffType: this.selectedType,
-                first: pageSize,
-                after: this.stuffListPaginationCursor
-              },
-              updateQuery: (previousResult, { fetchMoreResult }) => {
-                const newEdges = fetchMoreResult.stuffsConnection.edges
-                const pageInfo = fetchMoreResult.stuffsConnection.pageInfo
 
-                localHasNextPage = pageInfo.hasNextPage
+          const cursor = this.stuffsConnection ? this.stuffsConnection.pageInfo.endCursor : null
+          let localHasNextPage
 
-                return {
-                  stuffsConnection: {
-                    __typename: this.stuffsConnection.__typename,
-                    edges: [...this.stuffsConnection.edges, ...newEdges],
-                    pageInfo: pageInfo
-                  }
+          await this.$apollo.queries.stuffsConnection.fetchMore({
+            variables: {
+              map: this.selectedMap,
+              stuffType: this.selectedType,
+              first: pageSize,
+              after: cursor
+            },
+            updateQuery: (previousResult, { fetchMoreResult }) => {
+              const newEdges = fetchMoreResult.stuffsConnection.edges
+
+              const edges = this.stuffsConnection ? [...this.stuffsConnection.edges, ...newEdges] : newEdges
+              const newPageInfo = fetchMoreResult.stuffsConnection.pageInfo
+
+              localHasNextPage = newPageInfo.hasNextPage
+
+              return {
+                stuffsConnection: {
+                  __typename: previousResult.stuffsConnection.__typename,
+                  edges: edges,
+                  pageInfo: newPageInfo
                 }
               }
-            })
-            $state.loaded()
-            if (!localHasNextPage) $state.complete()
-          } else {
-            $state.loaded()
-            $state.complete()
-          }
+            }
+          })
+          $state.loaded()
+          if (!localHasNextPage) $state.complete()
         }
       }
 
