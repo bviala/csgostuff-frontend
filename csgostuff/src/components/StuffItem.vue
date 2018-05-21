@@ -71,12 +71,12 @@
         return this.localMyVote === 'DOWNVOTE' ? 'red' : ''
       }
     },
-    watch: {
+    /* watch: {
       // update localMyVote on user sign in
       stuff: function (value) {
         this.localMyVote = value.myVote
       }
-    },
+    }, */
     methods: {
       upvote () {
         if (this.localMyVote === 'UPVOTE') {

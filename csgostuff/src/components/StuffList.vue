@@ -50,6 +50,13 @@
 
     const pageSize = 3
 
+    // prevents from infinite scroll bug with chrome: see https://stackoverflow.com/questions/47524205/random-high-content-download-time-in-chrome/47684257#47684257
+    window.addEventListener('mousewheel', (e) => {
+      if (e.deltaY === 1) {
+        e.preventDefault()
+      }
+    })
+
     export default {
       name: 'StuffList',
       data () {
