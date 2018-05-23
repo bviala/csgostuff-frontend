@@ -29,7 +29,7 @@
 
           <!-- v-if prevent infiniteHandler to be called at page creation -->
           <infinite-loading
-            v-if="hasInitialQueryBeenDone"
+            v-if="!lockInfiniteHandler"
             @infinite="infiniteHandler" 
             :distance="0"
             ref="infiniteLoading">
@@ -82,7 +82,7 @@
             {text: 'Smoke', value: 'SMOKE'}
           ],
           stuffsConnection: null,
-          hasInitialQueryBeenDone: false
+          lockInfiniteHandler: true
         }
       },
       computed: {
@@ -91,12 +91,31 @@
         }
       },
       watch: {
-        // when user sign in, refetch to get current vote for each stuff
+        // when user signs in, get current vote for each stuff
         isUserSignedIn: function (value) {
-          if (value === true) this.filterChanged()
-        },
-        stuffsConnection: function (value) {
-          this.hasInitialQueryBeenDone = true
+          if (value === true) {
+            console.log('refetching')
+
+            this.$apollo.queries.stuffsConnection.fetchMore({
+              variables: {
+                map: this.selectedMap,
+                stuffType: this.selectedType,
+                first: Number(this.stuffsConnection.pageInfo.endCursor) + 1,
+                after: null
+              },
+              updateQuery: (previousResult, { fetchMoreResult }) => {
+                console.log(previousResult)
+                console.log(fetchMoreResult)
+                return {
+                  stuffsConnection: {
+                    __typename: previousResult.stuffsConnection.__typename,
+                    edges: fetchMoreResult.stuffsConnection.edges,
+                    pageInfo: previousResult.stuffsConnection.pageInfo
+                  }
+                }
+              }
+            })
+          }
         }
       },
       components: {
@@ -104,10 +123,23 @@
         InfiniteLoading
       },
       apollo: {
-        stuffsConnection: { // initialQuery: this query WILL execute, but just ONCE at app creation. Subsequent queries are managed by infiniteHandler
+        stuffsConnection: {
           query: STUFFS_CONNECTION,
-          variables: {
-            first: pageSize
+          variables () {
+            return {
+              map: this.selectedMap,
+              stuffType: this.selectedType,
+              first: pageSize,
+              after: null
+            }
+          },
+          manual: true,
+          result ({ data, loading }) {
+            if (!loading) {
+              this.stuffsConnection = data.stuffsConnection
+              this.lockInfiniteHandler = false // unlock the infinite handler after apollo automatic fetches and refetches()
+              console.log('endCursor: ' + data.stuffsConnection.pageInfo.endCursor)
+            }
           }
         }
       },
@@ -115,36 +147,34 @@
         async filterChanged () {
           console.log('filterChanged')
           await this.$vuetify.goTo(0, {duration: 0})
-          this.stuffsConnection = null
+          this.lockInfiniteHandler = true // lock the infinite handler on filter change to let apollo manage the refetch
           this.$refs.infiniteLoading.$emit('$InfiniteLoading:reset')
         },
 
-        async infiniteHandler ($state) { // manage ALL queries, EXCEPT initial one at page creation
+        async infiniteHandler ($state) {
           console.log('infiniteHandler triggered')
 
-          const cursor = this.stuffsConnection ? this.stuffsConnection.pageInfo.endCursor : null
-          let localHasNextPage
+          if (!this.stuffsConnection.pageInfo.hasNextPage) { // skip if apollo automatic fetch have already loaded all the stuffs
+            $state.loaded()
+            $state.complete()
+            return
+          }
 
+          let localHasNextPage
           await this.$apollo.queries.stuffsConnection.fetchMore({
             variables: {
               map: this.selectedMap,
               stuffType: this.selectedType,
               first: pageSize,
-              after: cursor
+              after: this.stuffsConnection.pageInfo.endCursor
             },
             updateQuery: (previousResult, { fetchMoreResult }) => {
-              const newEdges = fetchMoreResult.stuffsConnection.edges
-
-              const edges = this.stuffsConnection ? [...this.stuffsConnection.edges, ...newEdges] : newEdges
-              const newPageInfo = fetchMoreResult.stuffsConnection.pageInfo
-
-              localHasNextPage = newPageInfo.hasNextPage
-
+              localHasNextPage = fetchMoreResult.stuffsConnection.pageInfo.hasNextPage
               return {
                 stuffsConnection: {
                   __typename: previousResult.stuffsConnection.__typename,
-                  edges: edges,
-                  pageInfo: newPageInfo
+                  edges: [...previousResult.stuffsConnection.edges, ...fetchMoreResult.stuffsConnection.edges],
+                  pageInfo: fetchMoreResult.stuffsConnection.pageInfo
                 }
               }
             }
