@@ -3,12 +3,14 @@
     <v-layout row class="pa-3">
       <v-flex xs3 id="sidePanel">
         <v-select
+          attach
           label="Map" 
           :items="mapOptions" 
           v-model="selectedMap"
           @change="filterChanged">
         </v-select>
         <v-select
+          attach
           label="Type" 
           :items="typeOptions" 
           v-model="selectedType"
@@ -27,7 +29,7 @@
             </template>
           </v-list>
 
-          <!-- v-if prevent infiniteHandler to be called at page creation -->
+          <!-- v-if prevent infiniteHandler to be called during apollo automatic fetches -->
           <infinite-loading
             v-if="!lockInfiniteHandler"
             @infinite="infiniteHandler" 
