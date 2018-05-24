@@ -49,6 +49,8 @@
     import { STUFFS_CONNECTION } from '../constants/graphql.js'
     import StuffItem from './StuffItem'
     import InfiniteLoading from 'vue-infinite-loading'
+    import mapOptions from '../constants/mapOptions.js'
+    import stuffTypeOptions from '../constants/stuffTypeOptions.js'
 
     const pageSize = 3
 
@@ -65,24 +67,8 @@
         return {
           selectedMap: null,
           selectedType: null,
-          mapOptions: [
-            {text: 'All', value: null},
-            {text: 'Cache', value: 'CACHE'},
-            {text: 'Cobblestone', value: 'COBBLESTONE'},
-            {text: 'Dust 2', value: 'DUST2'},
-            {text: 'Inferno', value: 'INFERNO'},
-            {text: 'Mirage', value: 'MIRAGE'},
-            {text: 'Nuke', value: 'NUKE'},
-            {text: 'Overpass', value: 'OVERPASS'},
-            {text: 'Train', value: 'TRAIN'}
-          ],
-          typeOptions: [
-            {text: 'All', value: null},
-            {text: 'Boost', value: 'BOOST'},
-            {text: 'Flash', value: 'FLASH'},
-            {text: 'Incendiary', value: 'INCENDIARY'},
-            {text: 'Smoke', value: 'SMOKE'}
-          ],
+          mapOptions: mapOptions,
+          typeOptions: stuffTypeOptions,
           stuffsConnection: null,
           lockInfiniteHandler: true
         }
