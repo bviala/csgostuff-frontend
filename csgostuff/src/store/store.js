@@ -79,7 +79,7 @@ export default new Vuex.Store({
       const expirationTimerId = setInterval(
         () => {
           console.log('checking date')
-          if (Date.now() > expirationDate - 3590000) { // expire after 10s for test purpose
+          if (Date.now() > expirationDate) { // - 3590000) { // expire after 10s for test purpose
             console.log('outdated token, dispatching signOutAction')
             // SEND EVENT FOR DIALOG DISPLAY ?
             dispatch('signOutAction')
