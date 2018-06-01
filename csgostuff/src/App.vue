@@ -36,10 +36,10 @@
 <script>
 export default {
   created () {
-    this.$store.dispatch('checkLocalStorageForToken')
+    this.$store.dispatch('initAuth')
   },
   beforeDestroy () {
-    this.$store.commit('removeExpirationTimer')
+    this.$store.commit('signedOut') // to remove token expiration timer (clearInterval), does not sign out the google user
   },
   computed: {
     isUserSignedIn () {
