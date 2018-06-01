@@ -79,11 +79,9 @@
         }
       },
       watch: {
-        // when user signs in, get current vote for each stuff
+        // when user signs in, fetchMore to get current vote for each stuff
         isUserSignedIn: function (value) {
           if (value === true) {
-            console.log('refetching')
-
             this.$apollo.queries.stuffsConnection.fetchMore({
               variables: {
                 map: this.selectedMap,
@@ -92,8 +90,6 @@
                 after: null
               },
               updateQuery: (previousResult, { fetchMoreResult }) => {
-                console.log(previousResult)
-                console.log(fetchMoreResult)
                 return {
                   stuffsConnection: {
                     __typename: previousResult.stuffsConnection.__typename,
@@ -126,7 +122,6 @@
             if (!loading) {
               this.stuffsConnection = data.stuffsConnection
               this.lockInfiniteHandler = false // unlock the infinite handler after apollo automatic fetches and refetches()
-              console.log('endCursor: ' + data.stuffsConnection.pageInfo.endCursor)
             }
           }
         }
@@ -140,8 +135,6 @@
         },
 
         async infiniteHandler ($state) {
-          console.log('infiniteHandler triggered')
-
           if (!this.stuffsConnection.pageInfo.hasNextPage) { // skip if apollo automatic fetch have already loaded all the stuffs
             $state.loaded()
             $state.complete()
