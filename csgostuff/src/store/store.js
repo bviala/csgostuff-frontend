@@ -30,45 +30,46 @@ export default new Vuex.Store({
     }
   },
   actions: {
-    initAuth ({ state, commit, dispatch }) { // rename Init Auth or smthg
-      console.log('initAuth action')
-
+    async initAuth ({ state, commit, dispatch }) { // rename Init Auth or smthg
       window.gapi.load('auth2', () => {
-        console.log('auth2 loaded')
-        const googleAuthInstance = window.gapi.auth2.init({
+        window.gapi.auth2.init({
           client_id: GSI_CLIENT_ID
         })
-        googleAuthInstance.then((googleAuthInstance) => {
-          console.log('googleAuthInstance initialized')
-          if (googleAuthInstance.isSignedIn.get()) { // user already connected
-            dispatch('signedInAction', googleAuthInstance.currentUser.get())
-          }
-        })
+          .then((googleAuthInstance) => {
+            console.log('googleAuthInstance initialized')
+            if (googleAuthInstance.isSignedIn.get()) { // user already connected
+              dispatch('signedInAction', googleAuthInstance.currentUser.get().getAuthResponse())
+            }
+          })
       })
     },
-    signInAction ({ dispatch, commit }) {
-      const auth2 = window.gapi.auth2.getAuthInstance()
-      auth2.signIn({
+    async signInAction ({ dispatch, commit }) {
+      const googleUser = await window.gapi.auth2.getAuthInstance().signIn({
         prompt: 'select_account'
-      }).then((googleUser) => {
-        dispatch('signedInAction', googleUser)
       })
+      dispatch('signedInAction', googleUser.getAuthResponse())
     },
-    signedInAction ({ dispatch, commit }, googleUser) {
+    signedInAction ({ state, dispatch, commit }, authResponse) {
       console.log('signedInaction')
 
-      const token = googleUser.getAuthResponse().id_token
-      const tokenExpirationDate = googleUser.getAuthResponse().expires_at
+      clearInterval(state.tokenExpirationTimerId) // remove any previously set timer
+
+      const token = authResponse.id_token
+      const tokenExpirationDate = authResponse.expires_at
       console.log('token: ' + token)
       console.log('expires_at: ' + tokenExpirationDate)
 
       const tokenExpirationTimerId = setInterval(
         () => {
           console.log('checking date')
-          if (Date.now() > tokenExpirationDate) { // - 3590000) { // expire after 10s for test purpose
-            console.log('outdated token, dispatching signOutAction')
-            // SEND EVENT FOR DIALOG DISPLAY ?
-            dispatch('signOutAction')
+          if (Date.now() > tokenExpirationDate - 60000) { // - 3590000) { // expire after 10s for test purpose
+            console.log('almost outdated token, try renew it')
+            window.gapi.auth2.getAuthInstance().currentUser.get().reloadAuthResponse()
+              .then(authResponse => dispatch('signedInAction', authResponse))
+              .catch(err => {
+                console.log(err)
+                commit('signedOut')
+              })
           }
         },
         EXPIRATION_TIMER_PERIOD
@@ -81,10 +82,7 @@ export default new Vuex.Store({
     },
     signOutAction ({ dispatch, commit }) {
       console.log('signOutAction')
-
-      const auth2 = window.gapi.auth2.getAuthInstance()
-      auth2.signOut()
-
+      window.gapi.auth2.getAuthInstance().signOut()
       commit('signedOut')
     }
   }
