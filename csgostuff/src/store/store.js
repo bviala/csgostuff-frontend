@@ -9,80 +9,82 @@ const EXPIRATION_TIMER_PERIOD = 1000 // ms
 export default new Vuex.Store({
   state: {
     isUserSignedIn: false,
-    tokenExpirationTimerId: null,
-    token: null,
-    tokenExpirationDate: null
+    tokenExpirationTimerId: null
   },
   mutations: {
     signedOut (state) {
       state.isUserSignedIn = false
-      state.token = null
-      state.tokenExpirationDate = null
+      localStorage.removeItem('ID_TOKEN')
+      localStorage.removeItem('ID_TOKEN_EXPIRATION_DATE')
+    },
+    signedIn (state, {token, tokenExpirationDate}) {
+      state.isUserSignedIn = true
+      localStorage.setItem('ID_TOKEN', token)
+      localStorage.setItem('ID_TOKEN_EXPIRATION_DATE', tokenExpirationDate)
+    },
+    setTokenExpirationTimerID (state, timerID) {
+      state.tokenExpirationTimerId = timerID
+    },
+    removeTokenExpirationTimer (state) {
       console.log('removeExpirationTimer')
       clearInterval(state.tokenExpirationTimerId)
       state.tokenExpirationTimerId = null
-    },
-    signedIn (state, {token, tokenExpirationDate, tokenExpirationTimerId}) {
-      state.isUserSignedIn = true
-      state.token = token
-      state.tokenExpirationDate = tokenExpirationDate
-      state.tokenExpirationTimerId = tokenExpirationTimerId
     }
   },
   actions: {
-    async initAuth ({ state, commit, dispatch }) { // rename Init Auth or smthg
+    initAuth ({ commit, dispatch }) {
+      if (
+        !!localStorage.getItem('ID_TOKEN') &&
+        !!localStorage.getItem('ID_TOKEN_EXPIRATION_DATE') &&
+        localStorage.getItem('ID_TOKEN_EXPIRATION_DATE') > Date.now()
+      ) {
+        commit('signedIn', {
+          token: localStorage.getItem('ID_TOKEN'),
+          tokenExpirationDate: localStorage.getItem('ID_TOKEN_EXPIRATION_DATE')
+        })
+        dispatch('startTokenExpirationTimer')
+      }
       window.gapi.load('auth2', () => {
         window.gapi.auth2.init({
           client_id: GSI_CLIENT_ID
         })
-          .then((googleAuthInstance) => {
-            console.log('googleAuthInstance initialized')
-            if (googleAuthInstance.isSignedIn.get()) { // user already connected
-              dispatch('signedInAction', googleAuthInstance.currentUser.get().getAuthResponse())
-            }
-          })
       })
     },
-    async signInAction ({ dispatch, commit }) {
+    async signInAction ({ commit, dispatch }) {
       const googleUser = await window.gapi.auth2.getAuthInstance().signIn({
         prompt: 'select_account'
       })
-      dispatch('signedInAction', googleUser.getAuthResponse())
+      const authResponse = googleUser.getAuthResponse()
+      commit('signedIn', {
+        token: authResponse.id_token,
+        tokenExpirationDate: authResponse.expires_at
+      })
+      dispatch('startTokenExpirationTimer')
     },
-    signedInAction ({ state, dispatch, commit }, authResponse) {
-      console.log('signedInaction')
-
-      clearInterval(state.tokenExpirationTimerId) // remove any previously set timer
-
-      const token = authResponse.id_token
-      const tokenExpirationDate = authResponse.expires_at
-      console.log('token: ' + token)
-      console.log('expires_at: ' + tokenExpirationDate)
-
+    startTokenExpirationTimer ({ commit, dispatch }) {
       const tokenExpirationTimerId = setInterval(
         () => {
-          console.log('checking date')
-          if (Date.now() > tokenExpirationDate - 60000) { // - 3590000) { // expire after 10s for test purpose
+          const tokenExpirationDate = localStorage.getItem('ID_TOKEN_EXPIRATION_DATE')
+          if (Date.now() > tokenExpirationDate - 60000) { // 3590000) { // expire after 10s for test purpose
             console.log('almost outdated token, try renew it')
             window.gapi.auth2.getAuthInstance().currentUser.get().reloadAuthResponse()
-              .then(authResponse => dispatch('signedInAction', authResponse))
+              .then(authResponse => commit('signedIn', {
+                token: authResponse.id_token,
+                tokenExpirationDate: authResponse.expires_at
+              }))
               .catch(err => {
                 console.log(err)
-                commit('signedOut')
+                dispatch('signOutAction')
               })
           }
         },
         EXPIRATION_TIMER_PERIOD
       )
-      commit('signedIn', {
-        token: token,
-        tokenExpirationDate: tokenExpirationDate,
-        tokenExpirationTimerId: tokenExpirationTimerId
-      })
+      commit('setTokenExpirationTimerID', tokenExpirationTimerId)
     },
-    signOutAction ({ dispatch, commit }) {
-      console.log('signOutAction')
+    signOutAction ({ commit }) {
       window.gapi.auth2.getAuthInstance().signOut()
+      commit('removeTokenExpirationTimer')
       commit('signedOut')
     }
   }

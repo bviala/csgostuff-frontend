@@ -38,9 +38,6 @@ export default {
   created () {
     this.$store.dispatch('initAuth')
   },
-  beforeDestroy () {
-    this.$store.commit('signedOut') // to remove token expiration timer (clearInterval), does not sign out the google user
-  },
   computed: {
     isUserSignedIn () {
       return this.$store.state.isUserSignedIn
