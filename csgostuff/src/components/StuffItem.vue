@@ -1,7 +1,7 @@
 <template>
     <v-flex>
         <v-card flat>
-            <v-card-media height="500px">
+            <v-card-media height="70vh">
               <video 
                 class="video-full-width" 
                 :src="stuff.gifURL" 
