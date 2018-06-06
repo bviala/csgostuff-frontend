@@ -31,3 +31,9 @@ export const REMOVE_VOTE_MUTATION = gql`
         removeVote(stuffID: $stuffID) 
     }
 `
+
+export const CREATE_STUFF_MUTATION = gql`
+    mutation createStuffMutation($name: String!, $map: Map!, $stuffType: StuffType!, $gifURL: String!){
+        createStuff(name: $name, map: $map, stuffType: $stuffType, gifURL: $gifURL)
+    }
+`

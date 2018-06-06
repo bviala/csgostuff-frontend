@@ -7,6 +7,7 @@
           label="Map" 
           :items="mapOptions" 
           v-model="selectedMap"
+          clearable
           @change="filterChanged">
         </v-select>
         <v-select
@@ -14,8 +15,19 @@
           label="Type" 
           :items="typeOptions" 
           v-model="selectedType"
+          clearable
           @change="filterChanged">
-        </v-select> 
+        </v-select>
+        <v-btn
+          :disabled="!$store.state.isUserSignedIn"
+          dark
+          absolute
+          fab
+          bottom
+          color="pink"
+          @click="$router.push('createstuff')">
+          <v-icon>add</v-icon>
+        </v-btn>
       </v-flex>
       <v-flex xs9 offset-xs3>
         <v-layout column class="ml-3"> 
@@ -171,6 +183,7 @@
   #sidePanel {
     position: fixed;
     width: 100%;
+    height: 80vh;
   }
   #vpc {
     text-align: center;

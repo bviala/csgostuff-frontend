@@ -1,5 +1,5 @@
 export default [
-  {text: 'All', value: null},
+  /* {text: 'All', value: null}, */
   {text: 'Cache', value: 'CACHE'},
   {text: 'Cobblestone', value: 'COBBLESTONE'},
   {text: 'Dust 2', value: 'DUST2'},
