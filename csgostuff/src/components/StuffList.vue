@@ -24,7 +24,7 @@
           absolute
           fab
           bottom
-          color="pink"
+          color="primary"
           @click="$router.push('createstuff')">
           <v-icon>add</v-icon>
         </v-btn>

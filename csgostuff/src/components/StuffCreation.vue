@@ -3,7 +3,7 @@
     <div class="headline py-3">
       New stuff creation
     </div>
-    <v-dialog
+    <!-- <v-dialog
       max-width="500px"
       v-model="helpDialog">
       <v-card>
@@ -26,7 +26,7 @@
       icon flat
       @click="showHelpDialog">
       <v-icon>info</v-icon>
-    </v-btn>
+    </v-btn> -->
     <v-text-field 
       label="Stuff Name"
       v-model="stuffName"
@@ -43,17 +43,29 @@
       v-model="selectedStuffType">
     </v-select>
     <v-text-field 
-      label=".mp4 URL"
-      v-model="mp4Url"
-      :error-messages="mp4UrlErrorMessage">
+      label="gfycat URL"
+      v-model="gifUrl"
+      :error-messages="gifUrlErrorMessage">
     </v-text-field>
     <v-btn
-      color="pink"
+      color="primary"
       :dark="isFormValid"
       :disabled="!isFormValid"
       @click="createStuff">
       Create Stuff !
     </v-btn>
+    <!-- <v-card
+      v-if="validatedGifMp4Url">
+      <v-card-media>
+        <video
+          class="video-full-width"
+          :src="validatedGifMp4Url"
+          autoplay 
+          muted 
+          loop>
+        </video>
+      </v-card-media>
+    </v-card> -->
     <v-snackbar
       :timeout="2000"
       bottom
@@ -76,21 +88,28 @@ import mapOptions from '../constants/mapOptions.js'
 import stuffTypeOptions from '../constants/stuffTypeOptions.js'
 import { CREATE_STUFF_MUTATION } from '../constants/graphql'
 import _ from 'lodash'
+import axios from 'axios'
 
-const stuffNameValidator = /^(?=.{5,50}$)\w+((\s|')\w+)*$/
-const mp4UrlValidator = /(^https:\/\/(zippy|fat|giant).gfycat.com\/.+\.(mp4|webm)$)|(^https:\/\/media.giphy.com\/media\/.+\/giphy.mp4$)/
+const stuffNameMinLength = 5
+const stuffNameMaxLength = 50
+const gfycatGifUrlValidator = /^https:\/\/gfycat.com\/[a-zA-Z]{2}\/gifs\/detail\/([a-zA-Z]+)$/
 
 export default {
   data () {
     return {
       stuffName: null,
-      selectedMap: null,
-      selectedStuffType: null,
-      mapOptions: mapOptions,
-      stuffTypeOptions: stuffTypeOptions,
-      mp4Url: null,
       stuffNameErrorMessage: [],
-      mp4UrlErrorMessage: [],
+
+      selectedMap: null,
+      mapOptions: mapOptions,
+
+      selectedStuffType: null,
+      stuffTypeOptions: stuffTypeOptions,
+
+      gifUrl: null,
+      gifUrlErrorMessage: [],
+      validatedGifMp4Url: null,
+
       validationSnackbar: false,
       errorSnackbar: false,
       helpDialog: false
@@ -98,10 +117,10 @@ export default {
   },
   computed: {
     isFormValid () {
-      return !!this.stuffName && this.stuffNameErrorMessage.length === 0 &&
-        !!this.mp4Url && this.mp4UrlErrorMessage.length === 0 &&
-        !!this.selectedMap &&
-        !!this.selectedStuffType
+      return this.stuffName && this.stuffNameErrorMessage.length === 0 &&
+        this.gifUrl && this.gifUrlErrorMessage.length === 0 &&
+        this.selectedMap &&
+        this.selectedStuffType
     },
     isUserSignedIn () {
       return this.$store.state.isUserSignedIn
@@ -109,18 +128,18 @@ export default {
   },
   watch: {
     stuffName: function () {
-      this.debouncedCheckStuffName()
+      this.debouncedValidateStuffName()
     },
-    mp4Url: function () {
-      this.debouncedCheckMp4Url()
+    gifUrl: function () {
+      this.debouncedCheckGifUrl()
     },
     isUserSignedIn: function (isUserSignedIn) {
       if (!isUserSignedIn) this.$router.push('/')
     }
   },
   created () {
-    this.debouncedCheckStuffName = _.debounce(this.checkStuffName, 500)
-    this.debouncedCheckMp4Url = _.debounce(this.checkMp4Url, 500)
+    this.debouncedValidateStuffName = _.debounce(this.validateStuffName, 500)
+    this.debouncedCheckGifUrl = _.debounce(this.checkGifUrl, 500)
   },
   methods: {
     showHelpDialog () {
@@ -130,33 +149,52 @@ export default {
       this.stuffName = null
       this.selectedMap = null
       this.selectedStuffType = null
-      this.mp4Url = null
+      this.gifUrl = null
       this.stuffNameErrorMessage = []
-      this.mp4UrlErrorMessage = []
+      this.gifUrlErrorMessage = []
     },
-    setForm ({ stuffName, selectedMap, selectedStuffType, mp4Url }) {
+    setForm ({ stuffName, selectedMap, selectedStuffType, gifUrl }) {
       this.stuffName = stuffName
       this.selectedMap = selectedMap
       this.selectedStuffType = selectedStuffType
-      this.mp4Url = mp4Url
+      this.gifUrl = gifUrl
     },
-    checkStuffName () {
-      if (this.stuffName) {
-        this.stuffNameErrorMessage = stuffNameValidator.test(this.stuffName) ? [] : 'Invalid name'
+    validateStuffName () {
+      if (!this.stuffName) this.stuffNameErrorMessage = []
+      else {
+        this.stuffNameErrorMessage = []
+        if (this.stuffName.length < stuffNameMinLength) this.stuffNameErrorMessage = `Too short ! Minimum ${stuffNameMinLength} characters`
+        if (this.stuffName.length > stuffNameMaxLength) this.stuffNameErrorMessage = `Too long ! Maximum ${stuffNameMaxLength} characters`
+        if (!/^\w+((\s|')\w+)*$/.test(this.stuffName)) this.stuffNameErrorMessage = 'Unallowed characters or unnecessary whitespace'
       }
     },
-    checkMp4Url () {
-      if (this.mp4Url) {
-        this.mp4UrlErrorMessage = mp4UrlValidator.test(this.mp4Url) ? [] : 'Invalid URL'
+    async checkGifUrl () {
+      this.validatedGifMp4Url = null
+      if (!this.gifUrl) {
+        this.gifUrlErrorMessage = []
+        return
       }
+      this.gifUrlErrorMessage = []
+      const gifId = gfycatGifUrlValidator.exec(this.gifUrl)
+      if (!gifId) {
+        this.gifUrlErrorMessage = 'Invalid URL'
+        return
+      }
+      const gifDetails = await axios.get(`https://gfycat.com/cajax/get/${gifId[1]}`)
+      if (gifDetails.data.error) {
+        this.gifUrlErrorMessage = 'Invalid GIF ID'
+        return
+      }
+      this.validatedGifMp4Url = gifDetails.data.gfyItem.mp4Url
     },
     createStuff () {
       const savedForm = {
         stuffName: this.stuffName,
         selectedMap: this.selectedMap,
         selectedStuffType: this.selectedStuffType,
-        mp4Url: this.mp4Url
+        gifUrl: this.gifUrl
       }
+      const savedValidatedGifMp4Url = this.validatedGifMp4Url
       this.resetForm()
       this.$apollo.mutate({
         mutation: CREATE_STUFF_MUTATION,
@@ -164,7 +202,7 @@ export default {
           name: savedForm.stuffName,
           map: savedForm.selectedMap,
           stuffType: savedForm.selectedStuffType,
-          gifURL: savedForm.mp4Url
+          gifURL: savedValidatedGifMp4Url
         }
       }).then((data) => {
         this.validationSnackbar = true
@@ -183,5 +221,10 @@ export default {
   margin-top: 30px;
   padding-right: 250px;
   padding-left: 250px;
+}
+.video-full-width {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
