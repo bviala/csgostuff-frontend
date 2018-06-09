@@ -1,7 +1,7 @@
 <template>
   <v-container class="creationForm">
     <div class="headline py-3">
-      New stuff creation
+      Add a new stuff
     </div>
     <!-- <v-dialog
       max-width="500px"
@@ -52,7 +52,7 @@
       :dark="isFormValid"
       :disabled="!isFormValid"
       @click="createStuff">
-      Create Stuff !
+      submit
     </v-btn>
     <!-- <v-card
       v-if="validatedGifMp4Url">
@@ -99,6 +99,7 @@ export default {
     return {
       stuffName: null,
       stuffNameErrorMessage: [],
+      stuffNameValidated: false,
 
       selectedMap: null,
       mapOptions: mapOptions,
@@ -117,10 +118,10 @@ export default {
   },
   computed: {
     isFormValid () {
-      return this.stuffName && this.stuffNameErrorMessage.length === 0 &&
-        this.gifUrl && this.gifUrlErrorMessage.length === 0 &&
-        this.selectedMap &&
-        this.selectedStuffType
+      return this.stuffNameValidated &&
+        !!this.validatedGifMp4Url &&
+        !!this.selectedMap &&
+        !!this.selectedStuffType
     },
     isUserSignedIn () {
       return this.$store.state.isUserSignedIn
@@ -160,13 +161,25 @@ export default {
       this.gifUrl = gifUrl
     },
     validateStuffName () {
-      if (!this.stuffName) this.stuffNameErrorMessage = []
-      else {
+      this.stuffNameValidated = false
+      if (!this.stuffName) {
         this.stuffNameErrorMessage = []
-        if (this.stuffName.length < stuffNameMinLength) this.stuffNameErrorMessage = `Too short ! Minimum ${stuffNameMinLength} characters`
-        if (this.stuffName.length > stuffNameMaxLength) this.stuffNameErrorMessage = `Too long ! Maximum ${stuffNameMaxLength} characters`
-        if (!/^\w+((\s|')\w+)*$/.test(this.stuffName)) this.stuffNameErrorMessage = 'Unallowed characters or unnecessary whitespace'
+        return
       }
+      this.stuffNameErrorMessage = []
+      if (this.stuffName.length < stuffNameMinLength) {
+        this.stuffNameErrorMessage = `Too short ! Minimum ${stuffNameMinLength} characters`
+        return
+      }
+      if (this.stuffName.length > stuffNameMaxLength) {
+        this.stuffNameErrorMessage = `Too long ! Maximum ${stuffNameMaxLength} characters`
+        return
+      }
+      if (!/^\w+((\s|')\w+)*$/.test(this.stuffName)) {
+        this.stuffNameErrorMessage = 'Unallowed characters or unnecessary whitespace'
+        return
+      }
+      this.stuffNameValidated = true
     },
     async checkGifUrl () {
       this.validatedGifMp4Url = null

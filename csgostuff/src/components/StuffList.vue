@@ -25,7 +25,7 @@
           fab
           bottom
           color="primary"
-          @click="$router.push('createstuff')">
+          @click="$router.push('addstuff')">
           <v-icon>add</v-icon>
         </v-btn>
       </v-flex>
