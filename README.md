@@ -13,7 +13,4 @@ This project features:
 
 [Live demo here.](https://kindhearted-battle.surge.sh/#/) The backend uses a free hosting that goes idle when not used, so content will probably take time to load on your first visit.
 
-To this day:
-- Not responsive. Will look terrible on mobile.
-- GIFs stuttering issue on Windows + Chrome. Seems to work better with Firefox
-- Not working on Internet Explorer
+- Unfortunately not responsive. Will look terrible on mobile.
